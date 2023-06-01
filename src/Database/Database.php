@@ -757,19 +757,6 @@ class Database
     }
 
     /**
-     * Get Collection Size
-     *
-     * @param string $name
-     *
-     * @return int
-     */
-
-     public function getCollectionSize(string $name): string 
-     {
-         return $this->adapter->getCollectionSize($name);
-     }
-
-    /**
      * Delete Collection
      *
      * @param string $id
