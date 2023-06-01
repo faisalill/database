@@ -51,7 +51,12 @@ class SQLite extends MariaDB
 
         $stmt->bindValue(':table', "{$this->getNamespace()}_{$collection}", PDO::PARAM_STR);
 
-        $stmt->execute();
+       try{
+            $stmt->execute();
+       }
+       catch (PDOException $e) {
+            throw new DatabaseException('Failed to check if collection exists: ' . $e->getMessage()); 
+       }
 
         $document = $stmt->fetch();
 
@@ -114,7 +119,8 @@ class SQLite extends MariaDB
 
             $attributeStrings[$key] = "`{$attrId}` {$attrType}, ";
         }
-
+        
+        try{
         $this->getPDO()
             ->prepare("CREATE TABLE IF NOT EXISTS `{$namespace}_{$id}` (
                     `_id` INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -153,6 +159,10 @@ class SQLite extends MariaDB
         $this->createIndex("{$id}_perms", '_index_2', Database::INDEX_KEY, ['_permission'], [], []);
 
         $this->getPDO()->commit();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to create collection: ' . $e->getMessage());
+        }
 
         // Update $this->getCountOfIndexes when adding another default index
         return true;
@@ -169,6 +179,7 @@ class SQLite extends MariaDB
     {
         $id = $this->filter($id);
 
+        try{
         $this->getPDO()->beginTransaction();
 
         $this->getPDO()
@@ -180,6 +191,10 @@ class SQLite extends MariaDB
             ->execute();
 
         $this->getPDO()->commit();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to delete collection: '. $e->getMessage());
+        }
 
         return true;
     }
@@ -235,10 +250,17 @@ class SQLite extends MariaDB
             }
         }
 
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)}
-                DROP COLUMN `{$id}`;")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)}
+            DROP COLUMN `{$id}`;
+        ");
+        
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to delete attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -301,9 +323,14 @@ class SQLite extends MariaDB
         $name = $this->filter($collection);
         $id = $this->filter($id);
 
-        return $this->getPDO()
-            ->prepare($this->getSQLIndex($name, $id, $type, $attributes))
-            ->execute();
+        $stmt = $this->getPDO()->prepare($this->getSQLIndex($name, $id, $type, $attributes));
+       
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to create index: '. $e->getMessage());
+        }
     }
 
     /**
@@ -320,9 +347,16 @@ class SQLite extends MariaDB
         $name = $this->filter($collection);
         $id = $this->filter($id);
 
-        return $this->getPDO()
-            ->prepare("DROP INDEX `{$this->getNamespace()}_{$name}_{$id}`;")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            DROP INDEX `{$this->getNamespace()}_{$name}_{$id}`;
+        ");
+            
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to delete index: '. $e->getMessage());
+        }
     }
 
     /**

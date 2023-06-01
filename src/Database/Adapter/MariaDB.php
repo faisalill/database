@@ -27,9 +27,16 @@ class MariaDB extends SQL
     {
         $name = $this->filter($name);
 
-        return $this->getPDO()
-            ->prepare("CREATE DATABASE IF NOT EXISTS `{$name}` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            CREATE DATABASE IF NOT EXISTS `{$name}` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+        ");
+
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to create database: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -44,9 +51,16 @@ class MariaDB extends SQL
     {
         $name = $this->filter($name);
 
-        return $this->getPDO()
-            ->prepare("DROP DATABASE `{$name}`;")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            DROP DATABASE `{$name}`;
+        ");
+        
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to delete database: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -153,9 +167,16 @@ class MariaDB extends SQL
     {
         $id = $this->filter($id);
 
-        return $this->getPDO()
-            ->prepare("DROP TABLE {$this->getSQLTable($id)}, {$this->getSQLTable($id . '_perms')};")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            DROP TABLE {$this->getSQLTable($id)}, {$this->getSQLTable($id . '_perms')};
+        ");
+        
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to delete collection: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -180,10 +201,17 @@ class MariaDB extends SQL
         if ($array) {
             $type = 'LONGTEXT';
         }
-
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)} ADD COLUMN `{$id}` {$type};")
-            ->execute();
+        
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)} ADD COLUMN `{$id}` {$type};
+        ");
+                     
+        try{
+            return $stmt->execute();
+        }        
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to create attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -209,9 +237,16 @@ class MariaDB extends SQL
             $type = 'LONGTEXT';
         }
 
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)} MODIFY `{$id}` {$type};")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)} MODIFY `{$id}` {$type};
+        ");
+       
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to update attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -228,10 +263,17 @@ class MariaDB extends SQL
     {
         $name = $this->filter($collection);
         $id = $this->filter($id);
-
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)} DROP COLUMN `{$id}`;")
-            ->execute();
+        
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)} DROP COLUMN `{$id}`;
+        ");
+     
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to delete attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -250,9 +292,16 @@ class MariaDB extends SQL
         $old = $this->filter($old);
         $new = $this->filter($new);
 
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($collection)} RENAME COLUMN `{$old}` TO `{$new}`;")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($collection)} RENAME COLUMN `{$old}` TO `{$new}`;
+        ");
+        
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to rename attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -301,9 +350,14 @@ class MariaDB extends SQL
                 throw new DatabaseException('Invalid relationship type');
         }
 
-        return $this->getPDO()
-            ->prepare($sql)
-            ->execute();
+        $stmt = $this->getPDO()->prepare($sql);
+
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to create relationship: '. $e->getMessage());
+        }
     }
 
     /**
@@ -383,10 +437,15 @@ class MariaDB extends SQL
         if (empty($sql)) {
             return true;
         }
-
-        return $this->getPDO()
-            ->prepare($sql)
-            ->execute();
+        
+        $stmt = $this->getPDO()->prepare($sql);
+        
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to update relationship: '. $e->getMessage());
+        }
     }
 
     public function deleteRelationship(
@@ -449,10 +508,15 @@ class MariaDB extends SQL
         if (empty($sql)) {
             return true;
         }
+        
+        $stmt = $this->getPDO()->prepare($sql);
 
-        return $this->getPDO()
-            ->prepare($sql)
-            ->execute();
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to delete relationship: '. $e->getMessage());
+        }
     }
 
     /**
@@ -470,9 +534,16 @@ class MariaDB extends SQL
         $old = $this->filter($old);
         $new = $this->filter($new);
 
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($collection)} RENAME INDEX `{$old}` TO `{$new}`;")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($collection)} RENAME INDEX `{$old}` TO `{$new}`;
+        ");
+        
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to rename index: '. $e->getMessage());
+        }
     }
 
     /**
@@ -513,9 +584,14 @@ class MariaDB extends SQL
             $attributes[$key] = "`{$attribute}`{$length} {$order}";
         }
 
-        return $this->getPDO()
-            ->prepare($this->getSQLIndex($name, $id, $type, $attributes))
-            ->execute();
+        $stmt = $this->getPDO()->prepare($this->getSQLIndex($name, $id, $type, $attributes));
+
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to create index: '. $e->getMessage());
+        }
     }
 
     /**
@@ -531,10 +607,17 @@ class MariaDB extends SQL
     {
         $name = $this->filter($collection);
         $id = $this->filter($id);
-
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)} DROP INDEX `{$id}`;")
-            ->execute();
+        
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)} DROP INDEX `{$id}`;
+        ");
+       
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to delete index: '. $e->getMessage());
+        }
     }
 
     /**
@@ -1112,7 +1195,12 @@ class MariaDB extends SQL
             $stmt->bindValue(':max', $max, PDO::PARAM_INT);
         }
 
-        $stmt->execute();
+        try{
+            $stmt->execute();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to get count of documents: ' . $e->getMessage());
+        }
 
         $result = $stmt->fetch();
 
@@ -1165,7 +1253,12 @@ class MariaDB extends SQL
             $stmt->bindValue(':max', $max, PDO::PARAM_INT);
         }
 
-        $stmt->execute();
+        try{
+            $stmt->execute();
+        }
+        catch (PDOException $e) {
+            throw new DatabaseException('Failed to get sum of attribute: '. $e->getMessage());
+        }
 
         $result = $stmt->fetch();
 

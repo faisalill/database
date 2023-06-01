@@ -36,9 +36,16 @@ class Postgres extends SQL
     {
         $name = $this->filter($name);
 
-        return $this->getPDO()
-            ->prepare("CREATE SCHEMA IF NOT EXISTS \"{$name}\"")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            CREATE SCHEMA IF NOT EXISTS \"{$name}\"
+        ");
+                
+        try{
+            return $stmt->execute();
+        }
+        catch(PDOException $e){
+            throw new DatabaseException('Failed to create database: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -52,9 +59,17 @@ class Postgres extends SQL
     public function delete(string $name): bool
     {
         $name = $this->filter($name);
-        return $this->getPDO()
-            ->prepare("DROP SCHEMA \"{$name}\" CASCADE;")
-            ->execute();
+
+        $stmt = $this->getPDO()->prepare("
+            DROP SCHEMA \"{$name}\" CASCADE;
+        ");
+             
+        try{
+            return $stmt->execute();
+        }
+        catch(PDOException $e){
+            throw new DatabaseException('Failed to delete database: '. $e->getMessage());
+        }
     }
 
     /**
@@ -157,10 +172,17 @@ class Postgres extends SQL
     public function deleteCollection(string $id): bool
     {
         $id = $this->filter($id);
-
-        return $this->getPDO()
-            ->prepare("DROP TABLE {$this->getSQLTable($id)}, {$this->getSQLTable($id . '_perms')};")
-            ->execute();
+        
+        $stmt = $this->getPDO()->prepare("
+            DROP TABLE {$this->getSQLTable($id)}, {$this->getSQLTable($id . '_perms')};
+        ");
+               
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to delete collection: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -183,11 +205,18 @@ class Postgres extends SQL
         if ($array) {
             $type = 'TEXT';
         }
-
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)}
-                ADD COLUMN \"{$id}\" {$type};")
-            ->execute();
+        
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)}
+            ADD COLUMN \"{$id}\" {$type};
+        ");
+        
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to create attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -204,10 +233,17 @@ class Postgres extends SQL
         $name = $this->filter($collection);
         $id = $this->filter($id);
 
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)}
-                DROP COLUMN \"{$id}\";")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)}
+            DROP COLUMN \"{$id}\";
+        ");
+
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to delete attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -226,12 +262,19 @@ class Postgres extends SQL
         $old = $this->filter($old);
         $new = $this->filter($new);
 
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($collection)} RENAME COLUMN
-                \"{$old}\"
-                TO
-                \"{$new}\";")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($collection)} RENAME COLUMN
+            \"{$old}\"
+            TO
+            \"{$new}\";
+        ");
+
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to rename attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -261,10 +304,17 @@ class Postgres extends SQL
             $type = "TIMESTAMP(3) without time zone USING TO_TIMESTAMP(\"$id\", 'YYYY-MM-DD HH24:MI:SS.MS')";
         }
 
-        return $this->getPDO()
-            ->prepare("ALTER TABLE {$this->getSQLTable($name)}
-                ALTER COLUMN \"{$id}\" TYPE {$type};")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER TABLE {$this->getSQLTable($name)}
+            ALTER COLUMN \"{$id}\" TYPE {$type};
+        ");
+
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to update attribute: '. $e->getMessage());
+        }
     }
 
     /**
@@ -313,9 +363,14 @@ class Postgres extends SQL
                 throw new DatabaseException('Invalid relationship type');
         }
 
-        return $this->getPDO()
-            ->prepare($sql)
-            ->execute();
+        $stmt = $this->getPDO()->prepare($sql);
+
+        try{
+            return $stmt->execute();
+        }
+        catch (PDOException $e){
+            throw new DatabaseException('Failed to create relationship: '. $e->getMessage());
+        }
     }
 
     /**
@@ -455,9 +510,14 @@ class Postgres extends SQL
                 throw new DatabaseException('Invalid relationship type');
         }
 
-        return $this->getPDO()
-            ->prepare($sql)
-            ->execute();
+        $stmt = $this->getPDO()->prepare($sql);
+      
+        try{
+            return $stmt->execute();
+        }
+        catch(PDOException $e){
+           throw new DatabaseException('Failed to delete relationship: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -501,9 +561,14 @@ class Postgres extends SQL
             }
         }
 
-        return $this->getPDO()
-            ->prepare($this->getSQLIndex($name, $id, $type, $attributes))
-            ->execute();
+        $stmt = $this->getPDO()->prepare($this->getSQLIndex($name, $id, $type, $attributes));
+            
+        try{
+            return $stmt->execute();
+        } 
+        catch(PDOException $e){
+            throw new DatabaseException('Failed to create index: '. $e->getMessage());
+        }
     }
 
     /**
@@ -521,9 +586,16 @@ class Postgres extends SQL
         $id = $this->filter($id);
         $schemaName = $this->getDefaultDatabase();
 
-        return $this->getPDO()
-            ->prepare("DROP INDEX IF EXISTS \"{$schemaName}\".{$id};")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            DROP INDEX IF EXISTS \"{$schemaName}\".{$id};
+        ");
+        
+        try{
+            return $stmt->execute();
+        }
+        catch(PDOException $e){
+            throw new DatabaseException('Failed to delete index: '. $e->getMessage());
+        }
     }
 
     /**
@@ -545,9 +617,16 @@ class Postgres extends SQL
         $oldIndexName = $collection . "_" . $old;
         $newIndexName = $namespace . $collection . "_" . $new;
 
-        return $this->getPDO()
-            ->prepare("ALTER INDEX {$this->getSQLTable($oldIndexName)} RENAME TO \"{$newIndexName}\";")
-            ->execute();
+        $stmt = $this->getPDO()->prepare("
+            ALTER INDEX {$this->getSQLTable($oldIndexName)} RENAME TO \"{$newIndexName}\";
+        ");
+
+        try{
+            return $stmt->execute();
+        }
+        catch(PDOException $e){
+            throw new DatabaseException('Failed to rename index: '. $e->getMessage());
+        }
     }
 
     /**
@@ -1120,7 +1199,12 @@ class Postgres extends SQL
             $stmt->bindValue(':max', $max, PDO::PARAM_INT);
         }
 
-        $stmt->execute();
+        try{
+            $stmt->execute();
+        }
+        catch (PDOException $e) {
+           throw new DatabaseException('Failed to get count of documents: ' . $e->getMessage());
+        }
 
         $result = $stmt->fetch();
 
@@ -1172,7 +1256,12 @@ class Postgres extends SQL
             $stmt->bindValue(':max', $max, PDO::PARAM_INT);
         }
 
-        $stmt->execute();
+        try{
+            $stmt->execute();
+        }
+        catch (PDOException $e) {
+           throw new DatabaseException('Failed to get sum of attribute: '. $e->getMessage());
+        }
 
         $result = $stmt->fetch();
 
