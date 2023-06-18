@@ -1676,4 +1676,12 @@ class Mongo extends Adapter
 
         throw $e;
     }
+
+    /**
+     * @return int
+     */
+    public function getMaxIndexLength(): int
+    {
+        return 0;
+    }
 }
