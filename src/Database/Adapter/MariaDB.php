@@ -1059,7 +1059,6 @@ class MariaDB extends SQL
             unset($results[$key]['_updatedAt']);
             unset($results[$key]['_permissions']);
             }
-            
 
             $results[$key] = new Document($results[$key]);
         }
