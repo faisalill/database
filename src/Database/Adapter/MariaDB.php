@@ -143,6 +143,38 @@ class MariaDB extends SQL
     }
 
     /**
+     * Get Collection Size
+     * @param string $collection
+     * @return int
+     * @throws DatabaseException
+     */
+    public function getSizeOfCollection(string $collection): int
+    {
+        $filteredName = $this->filter($collection);
+        $collectionName = "{$this->getNamespace()}_{$filteredName}";
+        $database = $this->getDefaultDatabase();
+        $name = $database . '/' . $collectionName;
+
+        $query = $this->getPDO()->prepare("
+             SELECT SUM(FS_BLOCK_SIZE + ALLOCATED_SIZE)  
+             FROM INFORMATION_SCHEMA.INNODB_SYS_TABLESPACES
+             WHERE NAME = CONCAT(:name)
+         ");
+
+        $query->bindParam(':name', $name);
+
+        try {
+             $query->execute();
+             $size = $query->fetchColumn();
+        }
+        catch (PDOException $e) {
+             throw new DatabaseException('Failed to get collection size: ' . $e->getMessage());
+        }
+
+        return $size;
+    }
+
+    /**
      * Delete Collection
      * @param string $id
      * @return bool
@@ -1046,6 +1078,7 @@ class MariaDB extends SQL
         $results = $stmt->fetchAll();
 
         foreach ($results as $key => $value) {
+            if (isset($value['_uid'], $value['_id'], $value['_createdAt'], $value['_updatedAt'], $value['_permissions'])) {
             $results[$key]['$id'] = $value['_uid'];
             $results[$key]['$internalId'] = $value['_id'];
             $results[$key]['$createdAt'] = $value['_createdAt'];
@@ -1057,6 +1090,8 @@ class MariaDB extends SQL
             unset($results[$key]['_createdAt']);
             unset($results[$key]['_updatedAt']);
             unset($results[$key]['_permissions']);
+            }
+            
 
             $results[$key] = new Document($results[$key]);
         }
@@ -1189,11 +1224,11 @@ class MariaDB extends SQL
             return '*';
         }
 
-        $selections[] = '_uid';
-        $selections[] = '_id';
-        $selections[] = '_createdAt';
-        $selections[] = '_updatedAt';
-        $selections[] = '_permissions';
+        // $selections[] = '_uid';
+        // $selections[] = '_id';
+        // $selections[] = '_createdAt';
+        // $selections[] = '_updatedAt';
+        // $selections[] = '_permissions'; 
 
         if (!empty($prefix)) {
             foreach ($selections as &$selection) {

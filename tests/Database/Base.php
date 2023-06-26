@@ -1020,6 +1020,8 @@ abstract class Base extends TestCase
             Query::select(['string', 'integer']),
         ]);
 
+        var_dump($document);
+
         $this->assertNotEmpty(true, $document->getId());
         $this->assertIsString($document->getAttribute('string'));
         $this->assertEquals('text📝', $document->getAttribute('string'));
@@ -2540,12 +2542,6 @@ abstract class Base extends TestCase
             Query::select(['name', 'year'])
         ]);
         foreach ($documents as $document) {
-            $this->assertArrayHasKey('$id', $document);
-            $this->assertArrayHasKey('$internalId', $document);
-            $this->assertArrayHasKey('$collection', $document);
-            $this->assertArrayHasKey('$createdAt', $document);
-            $this->assertArrayHasKey('$updatedAt', $document);
-            $this->assertArrayHasKey('$permissions', $document);
             $this->assertArrayHasKey('name', $document);
             $this->assertArrayHasKey('year', $document);
             $this->assertArrayNotHasKey('director', $document);

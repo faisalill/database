@@ -127,6 +127,7 @@ abstract class SQL extends Adapter
             return new Document([]);
         }
 
+        if(isset($document['_id'], $document['_uid'], $document['_createdAt'], $document['_updatedAt'], $document['_permissions'])){
         $document['$id'] = $document['_uid'];
         $document['$internalId'] = $document['_id'];
         $document['$createdAt'] = $document['_createdAt'];
@@ -138,7 +139,8 @@ abstract class SQL extends Adapter
         unset($document['_createdAt']);
         unset($document['_updatedAt']);
         unset($document['_permissions']);
-
+        }
+        
         return new Document($document);
     }
 
