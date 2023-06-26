@@ -143,38 +143,6 @@ class MariaDB extends SQL
     }
 
     /**
-     * Get Collection Size
-     * @param string $collection
-     * @return int
-     * @throws DatabaseException
-     */
-    public function getSizeOfCollection(string $collection): int
-    {
-        $filteredName = $this->filter($collection);
-        $collectionName = "{$this->getNamespace()}_{$filteredName}";
-        $database = $this->getDefaultDatabase();
-        $name = $database . '/' . $collectionName;
-
-        $query = $this->getPDO()->prepare("
-             SELECT SUM(FS_BLOCK_SIZE + ALLOCATED_SIZE)  
-             FROM INFORMATION_SCHEMA.INNODB_SYS_TABLESPACES
-             WHERE NAME = CONCAT(:name)
-         ");
-
-        $query->bindParam(':name', $name);
-
-        try {
-             $query->execute();
-             $size = $query->fetchColumn();
-        }
-        catch (PDOException $e) {
-             throw new DatabaseException('Failed to get collection size: ' . $e->getMessage());
-        }
-
-        return $size;
-    }
-
-    /**
      * Delete Collection
      * @param string $id
      * @return bool
