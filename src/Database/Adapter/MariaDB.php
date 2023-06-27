@@ -1046,17 +1046,29 @@ class MariaDB extends SQL
         $results = $stmt->fetchAll();
 
         foreach ($results as $key => $value) {
-            if (isset($value['_uid'], $value['_id'], $value['_createdAt'], $value['_updatedAt'], $value['_permissions'])) {
+            
+            if (isset($value['_uid'])) {
             $results[$key]['$id'] = $value['_uid'];
-            $results[$key]['$internalId'] = $value['_id'];
-            $results[$key]['$createdAt'] = $value['_createdAt'];
-            $results[$key]['$updatedAt'] = $value['_updatedAt'];
-            $results[$key]['$permissions'] = json_decode($value['_permissions'] ?? '[]', true);
-
             unset($results[$key]['_uid']);
+            }
+
+            if (isset($value['_id'])) {
+            $results[$key]['$internalId'] = $value['_id'];
             unset($results[$key]['_id']);
+            }
+
+            if (isset($value['_createdAt'])) {
+            $results[$key]['$createdAt'] = $value['_createdAt'];
             unset($results[$key]['_createdAt']);
+            }
+
+            if (isset($value['_updatedAt'])) {
+            $results[$key]['$updatedAt'] = $value['_updatedAt'];
             unset($results[$key]['_updatedAt']);
+            }
+            
+            if (isset($value['_permissions'])) {
+            $results[$key]['$permissions'] = json_decode($value['_permissions'] ?? '[]', true);
             unset($results[$key]['_permissions']);
             }
 
@@ -1189,6 +1201,31 @@ class MariaDB extends SQL
                 return "`{$prefix}`.*";
             }
             return '*';
+        }
+
+        if (in_array('$internalId', $selections)) {
+            $index = array_search('$internalId', $selections);
+            $selections[$index] = '_id';
+        }
+
+        if (in_array('$id', $selections)) {
+            $index = array_search('$id', $selections);
+            $selections[$index] = '_uid';
+        }
+
+        if (in_array('$createdAt', $selections)) {
+            $index = array_search('$createdAt', $selections);
+            $selections[$index] = '_createdAt';
+        }
+
+        if (in_array('$updatedAt', $selections)) {
+            $index = array_search('$updatedAt', $selections);
+            $selections[$index] = '_updatedAt';
+        }
+
+        if (in_array('$permissions', $selections)) {
+            $index = array_search('$permissions', $selections);
+            $selections[$index] = '_permissions';
         }
 
         // $selections[] = '_uid';

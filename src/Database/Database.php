@@ -4471,6 +4471,12 @@ class Database
             }
         }
 
+        $keys[] = '$id';
+        $keys[] = '$internalId';
+        $keys[] = '$createdAt';
+        $keys[] = '$updatedAt';
+        $keys[] = '$permissions';
+
         $invalid = \array_diff($selections, $keys);
         if (!empty($invalid) && !\in_array('*', $invalid)) {
             throw new DatabaseException('Cannot select attributes: ' . \implode(', ', $invalid));

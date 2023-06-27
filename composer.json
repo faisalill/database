@@ -26,7 +26,7 @@
         ],
         "mytest" : [
             "Composer\\Config::disableProcessTimeout",
-            "docker compose exec tests vendor/bin/phpunit ./tests/Database/Adapter/MariaDBTest.php"
+            "docker compose exec tests vendor/bin/phpunit ./tests/Database/Adapter/MariaDBTest.php --stop-on-failure --verbose"
         ],
         "lint": "./vendor/bin/pint --test",
         "format": "./vendor/bin/pint",
