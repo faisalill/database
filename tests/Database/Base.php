@@ -1016,9 +1016,35 @@ abstract class Base extends TestCase
      */
     public function testGetDocumentSelect(Document $document): Document
     {
-        $document = static::getDatabase()->getDocument('documents', $document->getId(), [
-            Query::select(['string', 'integer', '$internalId', '$createdAt', '$updatedAt', '$permissions']),
+        $collection = static::getDatabase()->createCollection('select-testing');
+
+        static::getDatabase()->createAttribute('select-testing', 'string', DATABASE::VAR_STRING,255, false);
+        static::getDatabase()->createAttribute('select-testing', 'integer', DATABASE::VAR_INTEGER,255, false);
+
+        $document = static::getDatabase()->createDocument('select-testing', new Document([
+            'string' => 'text📝',
+            'integer' => 5,
+            '$permissions' => [
+                Permission::read(Role::any()),
+                Permission::create(Role::any()),
+                Permission::update(Role::any()),
+                Permission::delete(Role::any()),
+            ]
+        ]));
+
+        // var_dump($document);
+
+        $document = static::getDatabase()->getDocument('select-testing', $document->getId(), [
+            Query::select(['string', 'integer', '$createdAt']),
         ]);
+
+        var_dump($document);
+
+        throw new Exception('test');
+        // static::getDatabase()->createAttribute('select-testing', 'string', DATABASE::VAR_STRING,255, false);
+        // $document = static::getDatabase()->getDocument('documents', $document->getId(), [
+        //     Query::select(['string', 'integer']),
+        // ]);
 
         // $this->assertNotEmpty(true, $document->getId());
         // $this->assertIsString($document->getAttribute('string'));
@@ -1030,7 +1056,7 @@ abstract class Base extends TestCase
         // $this->assertArrayNotHasKey('colors', $document->getAttributes());
         // $this->assertArrayNotHasKey('with-dash', $document->getAttributes());
 
-        var_dump($document);
+        // var_dump($document);
 
         return $document;
     }

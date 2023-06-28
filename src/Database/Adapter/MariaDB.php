@@ -1228,11 +1228,7 @@ class MariaDB extends SQL
             $selections[$index] = '_permissions';
         }
 
-        // $selections[] = '_uid';
-        // $selections[] = '_id';
-        // $selections[] = '_createdAt';
-        // $selections[] = '_updatedAt';
-        // $selections[] = '_permissions'; 
+        $selections[] = '_uid';
 
         if (!empty($prefix)) {
             foreach ($selections as &$selection) {
