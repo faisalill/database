@@ -58,6 +58,15 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
 
+  surrealdb:
+    image: surrealdb/surrealdb:1.0.0
+    container_name: utopia-surrealdb
+    networks:
+      - database
+    ports:
+      - "8704:8000"
+    command: start --auth --user root --pass password
+ 
   mysql:
     image: mysql:8.0.31
     container_name: utopia-mysql
